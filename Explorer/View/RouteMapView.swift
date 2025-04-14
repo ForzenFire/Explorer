@@ -17,32 +17,35 @@ struct RouteMapView: UIViewRepresentable {
         return mapView
     }
 
-    func updateUIView(_ mapView: MKMapView, context: Context) {
-        mapView.setRegion(viewController.region, animated: true)
+    func updateUIView(_ uiView: MKMapView, context: Context) {
+        uiView.setRegion(viewController.region, animated: true)
 
-        // Remove old pins
-        mapView.removeAnnotations(mapView.annotations)
-
-        // Add search result annotations
-        for place in viewController.searchResults {
+        uiView.removeAnnotations(uiView.annotations)
+        let annotations = viewController.searchResults.map { result in
             let annotation = MKPointAnnotation()
-            annotation.coordinate = place.coordinate
-            annotation.title = place.name
-            mapView.addAnnotation(annotation)
+            annotation.coordinate = result.coordinate
+            annotation.title = result.name
+            return annotation
         }
+        uiView.addAnnotations(annotations)
 
-        // Remove and draw route
-        mapView.removeOverlays(mapView.overlays)
+        uiView.removeOverlays(uiView.overlays)
         if let route = viewController.route {
-            mapView.addOverlay(route.polyline)
+            uiView.addOverlay(route.polyline)
         }
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(self)
     }
 
     class Coordinator: NSObject, MKMapViewDelegate {
+        var parent: RouteMapView
+
+        init(_ parent: RouteMapView) {
+            self.parent = parent
+        }
+
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
             if let polyline = overlay as? MKPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
@@ -50,7 +53,8 @@ struct RouteMapView: UIViewRepresentable {
                 renderer.lineWidth = 5
                 return renderer
             }
-            return MKOverlayRenderer()
+            return MKOverlayRenderer(overlay: overlay)
         }
     }
 }
+
