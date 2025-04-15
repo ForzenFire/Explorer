@@ -43,7 +43,7 @@ struct MainTabView: View {
                             .clipShape(Circle())
                             .shadow(radius: 5)
                     }
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 10)
                     .padding(.horizontal, UIScreen.main.bounds.width / 2-30)
                 }
             }
