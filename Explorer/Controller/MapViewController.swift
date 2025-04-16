@@ -7,14 +7,15 @@ class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
         center: CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718),
         span: MKCoordinateSpan(latitudeDelta: 1.5, longitudeDelta: 1.5)
     )
-
+    
     @Published var searchResults: [MapSearchResult] = []
-    @Published var selectedPlace: MapSearchResult? = nil
+    @Published var selectedPlace: MapSearchResult?
     @Published var userLocation: CLLocationCoordinate2D?
-    @Published var route: MKRoute? = nil
-
+    @Published var route: MKRoute?
+    
     private let locationManager = CLLocationManager()
-
+    private var cancellables = Set<AnyCancellable>()
+    
     override init() {
         super.init()
         locationManager.delegate = self
@@ -22,8 +23,7 @@ class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
     }
-
-    // 🔄 Update user location
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         DispatchQueue.main.async {
@@ -34,43 +34,60 @@ class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
             )
         }
     }
-
-    // 🔍 Search for destination using natural language
+    
     func search(_ query: String) {
+        guard !query.isEmpty else {
+            searchResults = []
+            return
+        }
+        
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
         request.region = region
-
-        let search = MKLocalSearch(request: request)
-        search.start { response, error in
-            guard let mapItems = response?.mapItems else { return }
+        
+        MKLocalSearch(request: request).start { [weak self] response, error in
             DispatchQueue.main.async {
-                self.searchResults = mapItems.map { MapSearchResult(placemark: $0.placemark) }
+                if let error = error {
+                    print("Search error: \(error.localizedDescription)")
+                    self?.searchResults = []
+                    return
+                }
+                
+                self?.searchResults = response?.mapItems.map {
+                    MapSearchResult(placemark: $0.placemark)
+                } ?? []
             }
         }
     }
-
-    // 🗺️ Generate route from current location to selected place
+    
     func showDirections(to place: MapSearchResult) {
         selectedPlace = place
-
-        guard let userLocation = userLocation else { return }
-
-        let source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation))
-        let destination = MKMapItem(placemark: MKPlacemark(coordinate: place.coordinate))
-
+        region = MKCoordinateRegion(
+            center: place.coordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            )
+        
+        guard let userLocation = userLocation else {
+            print("User location not available")
+            return
+        }
+        
         let request = MKDirections.Request()
-        request.source = source
-        request.destination = destination
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: place.coordinate))
         request.transportType = .automobile
-
-        let directions = MKDirections(request: request)
-        directions.calculate { [weak self] response, error in
-            guard let self = self, let route = response?.routes.first else { return }
-
+        
+        MKDirections(request: request).calculate { [weak self] response, error in
             DispatchQueue.main.async {
-                self.route = route
-                self.region = MKCoordinateRegion(route.polyline.boundingMapRect)
+                if let error = error {
+                    print("Directions error: \(error.localizedDescription)")
+                    return
+                }
+                
+                self?.route = response?.routes.first
+                if let route = response?.routes.first {
+                    self?.region = MKCoordinateRegion(route.polyline.boundingMapRect.insetBy(dx: 0.5, dy: 0.5))
+                }
             }
         }
     }

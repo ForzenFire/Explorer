@@ -1,52 +1,96 @@
-//
-//  MainTabView.swift
-//  Explorer
-//
-//  Created by Kavindu Dilshan on 2025-04-09.
-//
 import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @State private var isFABOpen = false
+    @State private var showAddReminder = false
+    @State private var showReminderList = false
+
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
                 HomeView()
-                    .tabItem{Label("Home", systemImage: "house")}
+                    .tabItem { Label("Home", systemImage: "house") }
                     .tag(0)
+
                 MapView()
-                    .tabItem{Label("Map", systemImage: "map")}
+                    .tabItem { Label("Map", systemImage: "map") }
                     .tag(1)
-                ReminderView()
-                    .tabItem {Label("", systemImage: "")}
+
+                Color.clear // Placeholder for FAB
+                    .tabItem { Label("", systemImage: "") }
                     .tag(2)
+
                 MessageView()
-                    .tabItem{Label("Message", systemImage: "message")}
+                    .tabItem { Label("Message", systemImage: "message") }
                     .tag(3)
+
                 ProfileView()
-                    .tabItem{Label("Profile", systemImage: "person.circle")}
+                    .tabItem { Label("Profile", systemImage: "person.circle") }
                     .tag(4)
             }
-            
-            VStack {
-                Spacer()
-                HStack {
+
+            GeometryReader { geo in
+                VStack {
                     Spacer()
-                    Button(action: {
-                        selectedTab = 2
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .resizable()
-                            .frame(width: 60, height: 60)
-                            .foregroundColor(.blue)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
+                    ZStack {
+                        if isFABOpen {
+                            // 📋 Reminder List
+                            Button(action: {
+                                isFABOpen = false
+                                showReminderList = true
+                            }) {
+                                Image(systemName: "list.bullet.rectangle")
+                                    .resizable()
+                                    .frame(width: 26, height: 26)
+                                    .padding()
+                                    .background(Color.white)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 3)
+                            }
+                            .offset(x: -60, y: -60)
+
+                            // ✏️ Add Reminder
+                            Button(action: {
+                                isFABOpen = false
+                                showAddReminder = true
+                            }) {
+                                Image(systemName: "pencil")
+                                    .resizable()
+                                    .frame(width: 22, height: 22)
+                                    .padding()
+                                    .background(Color.white)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 3)
+                            }
+                            .offset(x: 60, y: -60)
+                        }
+
+                        // Main FAB
+                        Button(action: {
+                            withAnimation(.spring()) {
+                                isFABOpen.toggle()
+                            }
+                        }) {
+                            Image(systemName: isFABOpen ? "xmark" : "plus")
+                                .resizable()
+                                .frame(width: 26, height: 26)
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Circle().fill(Color.blue))
+                                .shadow(radius: 5)
+                        }
                     }
-                    .padding(.bottom, 10)
-                    .padding(.horizontal, UIScreen.main.bounds.width / 2-30)
+                    .frame(width: geo.size.width)
+                    .padding(.bottom, 20)
                 }
             }
+        }
+        .sheet(isPresented: $showAddReminder) {
+            AddReminderView()
+        }
+        .sheet(isPresented: $showReminderList) {
+            ReminderView()
         }
     }
 }
