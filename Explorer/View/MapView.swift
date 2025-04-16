@@ -11,10 +11,11 @@ struct MapView: View {
     @StateObject private var viewController = MapViewController()
     @State private var panelPosition: PanelPosition = .middle
     @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            // 🗺️ Custom map with pins + route
+            // Custom map with pins + route
             RouteMapView(viewController: viewController)
                 .edgesIgnoringSafeArea(.all)
 
@@ -24,8 +25,14 @@ struct MapView: View {
                     HStack(spacing: 8) {
                         TextField("Search location...", text: $searchText)
                             .textFieldStyle(.roundedBorder)
+                            .focused($isSearchFocused)
+                            .onTapGesture {
+                                panelPosition = .top
+                            }
                         Button("Search") {
-                            viewController.search(searchText) // ← calls correct function
+                            viewController.search(searchText)
+                            panelPosition = .middle
+                            isSearchFocused = false
                         }
                         .buttonStyle(.borderedProminent)
                     }
@@ -38,10 +45,11 @@ struct MapView: View {
                         ScrollView {
                             VStack(spacing: 4) {
                                 ForEach(viewController.searchResults, id: \.id) { place in
-                                    Button(action: {
+                                    Button {
                                         viewController.showDirections(to: place)
-                                        panelPosition = .bottom // Optionally collapse panel
-                                    }) {
+                                        panelPosition = .bottom
+                                        isSearchFocused = false
+                                    } label: {
                                         Text(place.name)
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                             .padding(8)
@@ -57,7 +65,7 @@ struct MapView: View {
                         Text("No results").foregroundColor(.gray)
                     }
                 }
-                .padding(.bottom, 16) // Removes extra space under text field
+                .padding(.bottom, 12) // Removes extra space under text field
             }
 
         }

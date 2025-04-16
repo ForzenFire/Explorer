@@ -16,17 +16,19 @@ struct SwipePanel<Content: View>: View {
     @Binding var position: PanelPosition
     let content: () -> Content
     @GestureState private var dragoffset = CGFloat.zero
-    
+
     var body: some View {
         GeometryReader { geo in
-            VStack {
+            VStack(spacing: 0) {
                 Spacer()
+
                 VStack(spacing: 0) {
                     Capsule()
                         .fill(Color.gray)
                         .frame(width: 40, height: 6)
-                        .padding(8)
-                    self.content()
+                        .padding(.top, 8)
+
+                    content()
                 }
                 .frame(width: geo.size.width, height: geo.size.height * (1 - position.rawValue))
                 .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemBackground)))
@@ -40,10 +42,10 @@ struct SwipePanel<Content: View>: View {
                         .onEnded { value in
                             let height = geo.size.height
                             let relative = (value.translation.height / height) + position.rawValue
-                            let closet = PanelPosition.allCases.min(by: {
+                            let closest = PanelPosition.allCases.min(by: {
                                 abs($0.rawValue - relative) < abs($1.rawValue - relative)
                             }) ?? .middle
-                            position = closet
+                            position = closest
                         }
                 )
             }
