@@ -117,9 +117,15 @@ struct MapView: View {
     }
     
     private func selectPlace(_ place: MapSearchResult) {
-        viewController.showDirections(to: place)
+        // Force hide keyboard first
         isSearchFieldFocused = false
-        panelPosition = .middle
+        hideKeyboard()
+        
+        // Then select the place after a small delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            viewController.showDirections(to: place)
+            panelPosition = .middle
+        }
     }
     
     private func hideKeyboard() {

@@ -2,6 +2,14 @@ import Foundation
 import MapKit
 import Combine
 
+extension MKCoordinateRegion {
+    static func regionForMapRect(_ mapRect: MKMapRect, padding: UIEdgeInsets) -> MKCoordinateRegion {
+        let tempMapView = MKMapView()
+        let fittedRect = tempMapView.mapRectThatFits(mapRect, edgePadding: padding)
+        return MKCoordinateRegion(fittedRect)
+    }
+}
+
 class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718),
@@ -64,11 +72,17 @@ class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
         selectedPlace = place
         region = MKCoordinateRegion(
             center: place.coordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            )
+            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        )
         
         guard let userLocation = userLocation else {
-            print("User location not available")
+            print("Showing place without directions - User location not available")
+            return
+        }
+        
+        guard CLLocationCoordinate2DIsValid(userLocation) &&
+                CLLocationCoordinate2DIsValid(place.coordinate) else {
+            print("Invalid coordinates for routing")
             return
         }
         
@@ -81,13 +95,24 @@ class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
             DispatchQueue.main.async {
                 if let error = error {
                     print("Directions error: \(error.localizedDescription)")
+                    self?.route = nil
+                    self?.region = MKCoordinateRegion(
+                        center: place.coordinate,
+                        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                    )
                     return
                 }
                 
-                self?.route = response?.routes.first
-                if let route = response?.routes.first {
-                    self?.region = MKCoordinateRegion(route.polyline.boundingMapRect.insetBy(dx: 0.5, dy: 0.5))
+                guard let route = response?.routes.first else {
+                    print("No routes found - showing destination only")
+                    self?.route = nil
+                    return
                 }
+                
+                self?.route = route
+                let routeRect = route.polyline.boundingMapRect
+                let padding = UIEdgeInsets(top: 50, left: 50, bottom: 100, right: 50)
+                self?.region = MKCoordinateRegion.regionForMapRect(routeRect, padding: padding)
             }
         }
     }
