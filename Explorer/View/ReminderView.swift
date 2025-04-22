@@ -10,7 +10,7 @@ struct ReminderView: View {
     var body: some View {
         NavigationView {
             Text("Reminder")
-                .navigationTitle("Reminder")
+                .navigationTitle("ReminderView")
         }
     }
 }

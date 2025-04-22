@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		294D2B8A2DB6AB5300F13AAD /* CDReminder+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294D2B892DB6AB5300F13AAD /* CDReminder+CoreDataProperties.swift */; };
+		294D2B8B2DB6AB5300F13AAD /* CDReminder+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294D2B882DB6AB5300F13AAD /* CDReminder+CoreDataClass.swift */; };
+		2960C7732DB2126600265CF4 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2960C7712DB2126600265CF4 /* Model.xcdatamodeld */; };
 		299598852DAF7C140049D6B0 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 299598842DAF7C140049D6B0 /* FirebaseAnalytics */; };
 		299598872DAF7C140049D6B0 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 299598862DAF7C140049D6B0 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		299598892DAF7C140049D6B0 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 299598882DAF7C140049D6B0 /* FirebaseAuth */; };
@@ -40,6 +43,9 @@
 		046786D12D97E2E900D6D175 /* Explorer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Explorer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		046786E12D97E2EA00D6D175 /* ExplorerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExplorerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		046786EB2D97E2EA00D6D175 /* ExplorerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExplorerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		294D2B882DB6AB5300F13AAD /* CDReminder+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDReminder+CoreDataClass.swift"; sourceTree = "<group>"; };
+		294D2B892DB6AB5300F13AAD /* CDReminder+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDReminder+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		2960C7722DB2126600265CF4 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -111,6 +117,9 @@
 		046786C82D97E2E900D6D175 = {
 			isa = PBXGroup;
 			children = (
+				294D2B882DB6AB5300F13AAD /* CDReminder+CoreDataClass.swift */,
+				294D2B892DB6AB5300F13AAD /* CDReminder+CoreDataProperties.swift */,
+				2960C7712DB2126600265CF4 /* Model.xcdatamodeld */,
 				046786D32D97E2E900D6D175 /* Explorer */,
 				046786E42D97E2EA00D6D175 /* ExplorerTests */,
 				046786EE2D97E2EA00D6D175 /* ExplorerUITests */,
@@ -285,6 +294,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				294D2B8A2DB6AB5300F13AAD /* CDReminder+CoreDataProperties.swift in Sources */,
+				294D2B8B2DB6AB5300F13AAD /* CDReminder+CoreDataClass.swift in Sources */,
+				2960C7732DB2126600265CF4 /* Model.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -673,6 +685,19 @@
 			productName = FirebaseStorage;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		2960C7712DB2126600265CF4 /* Model.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				2960C7722DB2126600265CF4 /* Model.xcdatamodel */,
+			);
+			currentVersion = 2960C7722DB2126600265CF4 /* Model.xcdatamodel */;
+			path = Model.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 046786C92D97E2E900D6D175 /* Project object */;
 }
