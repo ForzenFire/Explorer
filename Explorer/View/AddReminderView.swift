@@ -7,6 +7,9 @@ struct AddReminderView: View {
     @State private var notes = ""
     @State private var selectedDate: Date? = Date()
     @State private var showCustomDatePicker = false
+    @State private var showPermissionAlert = false
+    @State private var showNoCalendarAlert = false
+
 
     var body: some View {
         NavigationView {
@@ -68,7 +71,10 @@ struct AddReminderView: View {
                             reminderTitle: title,
                             notes: notes.isEmpty ? nil : notes,
                             dueDate: selectedDate,
-                            list: "Reminders"
+                            list: "Reminders",
+                            onFailure: {
+                                showNoCalendarAlert = true
+                            }
                         )
                         dismiss()
                     }
@@ -76,6 +82,28 @@ struct AddReminderView: View {
                 }
             }
         }
+        .alert("Reminder Access Denied", isPresented: $showPermissionAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("To use system Reminders, please enable access in Settings > Privacy > Reminders.")
+        }
+        
+        .alert("No Reminder List Found", isPresented: $showNoCalendarAlert) {
+            Button("Open Reminders App") {
+                if let url = URL(string: "x-apple-reminderkit://") {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Please open the Reminders app at least once to initialize your default list.")
+        }
+
     }
 
     // MARK: - Helpers
@@ -132,6 +160,7 @@ struct AddReminderView: View {
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
+
 }
 
 

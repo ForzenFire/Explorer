@@ -15,7 +15,7 @@ final class ReminderManager: ObservableObject {
 
     private init() {}
 
-    func addReminder(reminderTitle: String, notes: String?, dueDate: Date?, list: String?) {
+    func addReminder(reminderTitle: String, notes: String?, dueDate: Date?, list: String?, onFailure: (() -> Void)? = nil) {
         let reminder = Explorer.CDReminder(context: context)
 
         reminder.title = reminderTitle
@@ -50,7 +50,7 @@ final class ReminderManager: ObservableObject {
         }
     }
 
-    private func addToEventKit(_ reminder: CDReminder) {
+    private func addToEventKit(_ reminder: CDReminder, onFailure: (() -> Void)? = nil) {
         if #available(iOS 17.0, *) {
             eventStore.requestFullAccessToReminders { granted, error in
                 guard granted else {
@@ -70,21 +70,31 @@ final class ReminderManager: ObservableObject {
         }
     }
     
-    private func saveEKReminder(for reminder: CDReminder) {
+    private func saveEKReminder(for reminder: CDReminder, onFailure: (() -> Void)? = nil) {
         let ekReminder = EKReminder(eventStore: self.eventStore)
-        
         ekReminder.title = reminder.title ?? ""
         ekReminder.notes = reminder.notes
 
         if let date = reminder.dueDate {
+            let alarm = EKAlarm(absoluteDate: date)
+            ekReminder.addAlarm(alarm)
             ekReminder.dueDateComponents = Calendar.current.dateComponents(
                 [.year, .month, .day, .hour, .minute], from: date
             )
-            let alarm = EKAlarm(absoluteDate: date)
-            ekReminder.addAlarm(alarm)
         }
 
-        ekReminder.calendar = self.eventStore.defaultCalendarForNewReminders()
+        // ✅ Assign to default calendar, fallback if nil
+        if let calendar = self.eventStore.defaultCalendarForNewReminders() {
+            ekReminder.calendar = calendar
+        } else if let fallback = self.eventStore.calendars(for: .reminder).first(where: { $0.allowsContentModifications }) {
+            ekReminder.calendar = fallback
+        } else {
+            print("❌ No writable calendar found for reminders.")
+            DispatchQueue.main.async {
+                onFailure?()
+            }
+            return
+        }
 
         do {
             try self.eventStore.save(ekReminder, commit: true)
@@ -113,5 +123,28 @@ final class ReminderManager: ObservableObject {
 
     private func cancelNotification(uuid: String) {
         notificationCenter.removePendingNotificationRequests(withIdentifiers: [uuid])
+    }
+    
+    func checkReminderPermissionStatus() {
+        
+        let status = EKEventStore.authorizationStatus(for: .reminder)
+
+        switch status {
+        case .notDetermined:
+            print("🔍 Not determined")
+        case .restricted:
+            print("🚫 Restricted")
+        case .denied:
+            print("❌ Denied")
+        case .authorized:
+            print("✅ Authorized")
+        case .fullAccess:
+            print("✅ Full access granted")
+        case .writeOnly:
+            print("✍️ Write-only access")
+        @unknown default:
+            print("❓ Unknown status")
+        }
+
     }
 }
