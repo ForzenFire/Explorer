@@ -10,12 +10,14 @@ import FirebaseCore
 import EventKit
 import UserNotifications
 
-class AppDelegate: NSObject, UIApplicationDelegate {
+class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
       print("Firebase Configured!")
-      
+    
+      requestPermissions()
+      UNUserNotificationCenter.current().delegate = self
     
     return true
   }
@@ -49,7 +51,14 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             }
         }
     }
-
+    
+    // ✅ Display banners while app is in foreground
+    @objc(userNotificationCenter:willPresentNotification:withCompletionHandler:)
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
+    }
 }
 
 @main

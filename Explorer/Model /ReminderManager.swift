@@ -50,6 +50,7 @@ final class ReminderManager: ObservableObject {
         }
     }
 
+    //Add reminders to system
     private func addToEventKit(_ reminder: CDReminder, onFailure: (() -> Void)? = nil) {
         if #available(iOS 17.0, *) {
             eventStore.requestFullAccessToReminders { granted, error in
@@ -105,7 +106,6 @@ final class ReminderManager: ObservableObject {
     }
 
 
-
     private func scheduleNotification(for reminder: CDReminder) {
         guard let uuid = reminder.uuid, let title = reminder.title, let date = reminder.dueDate else { return }
 
@@ -118,8 +118,18 @@ final class ReminderManager: ObservableObject {
         let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
 
         let request = UNNotificationRequest(identifier: uuid, content: content, trigger: trigger)
-        notificationCenter.add(request, withCompletionHandler: nil)
+
+        print("📅 Scheduling notification at:", date)
+
+        notificationCenter.add(request) { error in
+            if let error = error {
+                print("❌ Notification failed:", error.localizedDescription)
+            } else {
+                print("✅ Notification scheduled for:", uuid)
+            }
+        }
     }
+
 
     private func cancelNotification(uuid: String) {
         notificationCenter.removePendingNotificationRequests(withIdentifiers: [uuid])
