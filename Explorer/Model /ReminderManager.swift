@@ -51,18 +51,50 @@ final class ReminderManager: ObservableObject {
     }
 
     private func addToEventKit(_ reminder: CDReminder) {
-        eventStore.requestAccess(to: .reminder) { granted, _ in
-            guard granted else { return }
-            let ekReminder = EKReminder(eventStore: self.eventStore)
-            ekReminder.title = reminder.title ?? ""
-            ekReminder.notes = reminder.notes
-            if let date = reminder.dueDate {
-                ekReminder.dueDateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        if #available(iOS 17.0, *) {
+            eventStore.requestFullAccessToReminders { granted, error in
+                guard granted else {
+                    print("❌ Full reminder access denied (iOS 17+): \(String(describing: error))")
+                    return
+                }
+                self.saveEKReminder(for: reminder)
             }
-            ekReminder.calendar = self.eventStore.defaultCalendarForNewReminders()
-            try? self.eventStore.save(ekReminder, commit: true)
+        } else {
+            eventStore.requestAccess(to: .reminder) { granted, error in
+                guard granted else {
+                    print("❌ Reminder access denied (iOS <17): \(String(describing: error))")
+                    return
+                }
+                self.saveEKReminder(for: reminder)
+            }
         }
     }
+    
+    private func saveEKReminder(for reminder: CDReminder) {
+        let ekReminder = EKReminder(eventStore: self.eventStore)
+        
+        ekReminder.title = reminder.title ?? ""
+        ekReminder.notes = reminder.notes
+
+        if let date = reminder.dueDate {
+            ekReminder.dueDateComponents = Calendar.current.dateComponents(
+                [.year, .month, .day, .hour, .minute], from: date
+            )
+            let alarm = EKAlarm(absoluteDate: date)
+            ekReminder.addAlarm(alarm)
+        }
+
+        ekReminder.calendar = self.eventStore.defaultCalendarForNewReminders()
+
+        do {
+            try self.eventStore.save(ekReminder, commit: true)
+            print("✅ Reminder saved to system Reminders app")
+        } catch {
+            print("❌ Failed to save to EventKit: \(error.localizedDescription)")
+        }
+    }
+
+
 
     private func scheduleNotification(for reminder: CDReminder) {
         guard let uuid = reminder.uuid, let title = reminder.title, let date = reminder.dueDate else { return }
