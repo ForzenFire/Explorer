@@ -9,17 +9,20 @@ struct LoginView: View {
     @StateObject var auth = AuthController()
     @State private var showRegister = false
     @State private var showReset = false
+    @State private var showError = false
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
+                    Spacer().frame(height: 40)
+                    
                     VStack(spacing: 16) {
                         Text("Sign In")
                             .font(.largeTitle.bold())
                             .padding(.bottom, 20)
                         
-                        VStack(spacing: 16) {
+                        VStack(spacing: 20) {
                             CustomTextField(
                                 text: $email,
                                 placeholder: "Email",
@@ -37,6 +40,7 @@ struct LoginView: View {
                             }
                             .font(.subheadline)
                             .frame(maxWidth: .infinity, alignment: .trailing)
+                            .padding(.top, 8)
                         }
                         
                         Button(action: login) {
@@ -44,6 +48,7 @@ struct LoginView: View {
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
+                        .padding(.top, 20)
                     }
                     .padding(.horizontal)
                     
@@ -61,7 +66,9 @@ struct LoginView: View {
                             SocialLoginButton(
                                 icon: "g.circle.fill",
                                 text: "Continue with Google",
-                                action: auth.signInWithGoogle
+                                action: {
+                                    auth.signInWithGoogle()
+                                }
                             )
                             
                             SocialLoginButton(
@@ -82,6 +89,20 @@ struct LoginView: View {
                     }
                 }
                 .padding()
+                .onChange(of: auth.errorMessage) {
+                    if !auth.errorMessage.isEmpty {
+                        showError = true
+                    }
+                }
+                .alert(isPresented: $showError) {
+                    Alert(
+                        title: Text("Login Error"),
+                        message: Text(auth.errorMessage),
+                        dismissButton: .default(Text("OK")) {
+                            auth.errorMessage = ""
+                        }
+                    )
+                }
             }
             .sheet(isPresented: $showRegister) {
                 RegisterView()

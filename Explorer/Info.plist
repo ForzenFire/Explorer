@@ -2,16 +2,26 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
-&lt;plist version="1.0"&gt;
-&lt;string&gt;com.googleusercontent.apps.147405881758-lpo1et4qbq8el10vbl8hgmk9tq8rr0im&lt;/string&gt;
-&lt;/plist&gt;
-</key>
-	<string></string>
-	<key>CFBundleDocumentTypes</key>
-	<array/>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.147405881758-lpo1et4qbq8el10vbl8hgmk9tq8rr0im</string>
+    <key>CLIENT_ID</key>
+    <string>147405881758-su0l6991tl9qoc35k0kg5dupioo1efb6.apps.googleusercontent.com</string>
+
+    <key>REVERSED_CLIENT_ID</key>
+    <string>com.googleusercontent.apps.147405881758-lpo1et4qbq8el10vbl8hgmk9tq8rr0im</string>
+
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.147405881758-lpo1et4qbq8el10vbl8hgmk9tq8rr0im</string>
+            </array>
+        </dict>
+    </array>
+
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>google</string>
+        <string>com.googleusercontent.apps.147405881758-lpo1et4qbq8el10vbl8hgmk9tq8rr0im</string>
+    </array>
 </dict>
 </plist>

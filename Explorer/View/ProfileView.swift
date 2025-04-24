@@ -17,17 +17,24 @@ struct ProfileView: View {
             }
 
             List {
-                Label("Profile", systemImage: "person")
-                Label("Bookmarked", systemImage: "bookmark")
-                Label("Previous Trips", systemImage: "clock")
-                Label("Settings", systemImage: "gear")
-                Label("Version", systemImage: "info.circle")
-
-                Button(action: logout) {
-                    Label("Logout", systemImage: "arrow.uturn.left")
-                        .foregroundColor(.red)
+                Section {
+                    Label("Profile", systemImage: "person")
+                    Label("Bookmarked", systemImage: "bookmark")
+                    Label("Previous Trips", systemImage: "clock")
+                    Label("Settings", systemImage: "gear")
+                    Label("Version", systemImage: "info.circle")
+                    
+                    Button(action: logout) {
+                        Label("Logout", systemImage: "arrow.uturn.left")
+                            .foregroundColor(.red)
+                    }
                 }
+                .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                .listRowSeparator(.hidden)
             }
+            .frame(minHeight: 400)
+            .listStyle(.plain)
+            .background(Color(.systemGroupedBackground))
         }
         .navigationTitle("Profile")
     }

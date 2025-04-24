@@ -52,6 +52,7 @@ class AuthController: ObservableObject {
 
     // MARK: - Sign in with Google
     func signInWithGoogle() {
+        print("🟡 signInWithGoogle called")
         guard let clientID = FirebaseApp.app()?.options.clientID else { return }
 
         let config = GIDConfiguration(clientID: clientID)
@@ -121,7 +122,12 @@ class AuthController: ObservableObject {
         guard let token = credential.identityToken,
               let tokenString = String(data: token, encoding: .utf8) else { return }
 
-        let firebaseCredential = OAuthProvider.credential(withProviderID: "apple.com", idToken: tokenString, rawNonce: "")
+        let firebaseCredential = OAuthProvider.credential(
+            providerID: .apple,
+                idToken: tokenString,
+                rawNonce: "",
+                accessToken: nil
+            )
 
         Auth.auth().signIn(with: firebaseCredential)
     }
