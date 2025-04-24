@@ -1,19 +1,49 @@
-//
-//  ProfileView.swift
-//  Explorer
-//
-//  Created by Kavindu Dilshan on 2025-04-09.
-//
 import SwiftUI
+import FirebaseAuth
 
 struct ProfileView: View {
+    @State private var userEmail = Auth.auth().currentUser?.email ?? "Unknown"
+    @State private var userName = Auth.auth().currentUser?.displayName ?? "User"
+
     var body: some View {
-        NavigationView {
-            Text("Profile")
-                .navigationTitle("Profile")
+        VStack(spacing: 20) {
+            VStack {
+                Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .frame(width: 100, height: 100)
+                    .padding(.top, 20)
+                Text(userName).font(.title2).bold()
+                Text(userEmail).font(.subheadline).foregroundColor(.gray)
+            }
+
+            List {
+                Label("Profile", systemImage: "person")
+                Label("Bookmarked", systemImage: "bookmark")
+                Label("Previous Trips", systemImage: "clock")
+                Label("Settings", systemImage: "gear")
+                Label("Version", systemImage: "info.circle")
+
+                Button(action: logout) {
+                    Label("Logout", systemImage: "arrow.uturn.left")
+                        .foregroundColor(.red)
+                }
+            }
+        }
+        .navigationTitle("Profile")
+    }
+
+    func logout() {
+        do {
+            try Auth.auth().signOut()
+            UserDefaults.standard.set(false, forKey: "isLoggedIn")
+            // redirect to login
+            NotificationCenter.default.post(name: NSNotification.Name("logout"), object: nil)
+        } catch {
+            print("Logout error: \(error)")
         }
     }
 }
+
 
 struct ProfileView_Preview: PreviewProvider {
     static var previews: some View {

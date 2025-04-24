@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		294D2B8A2DB6AB5300F13AAD /* CDReminder+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294D2B892DB6AB5300F13AAD /* CDReminder+CoreDataProperties.swift */; };
 		294D2B8B2DB6AB5300F13AAD /* CDReminder+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294D2B882DB6AB5300F13AAD /* CDReminder+CoreDataClass.swift */; };
-		2960754E2DB9760D00EF08DB /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2960754A2DB9602E00EF08DB /* GoogleService-Info.plist */; };
 		2960C7732DB2126600265CF4 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2960C7712DB2126600265CF4 /* Model.xcdatamodeld */; };
 		299598852DAF7C140049D6B0 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 299598842DAF7C140049D6B0 /* FirebaseAnalytics */; };
 		299598872DAF7C140049D6B0 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 299598862DAF7C140049D6B0 /* FirebaseAnalyticsWithoutAdIdSupport */; };
@@ -280,7 +279,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2960754E2DB9760D00EF08DB /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

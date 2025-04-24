@@ -9,82 +9,164 @@ struct LoginView: View {
     @StateObject var auth = AuthController()
     @State private var showRegister = false
     @State private var showReset = false
-
+    
     var body: some View {
         NavigationView {
-            VStack(spacing: 16) {
-                TextField("Email", text: $email)
-                    .textContentType(.emailAddress)
-                    .keyboardType(.emailAddress)
-
-                ZStack(alignment: .trailing) {
-                    Group {
-                        if showPassword {
-                            TextField("Password", text: $password)
-                        } else {
-                            SecureField("Password", text: $password)
+            ScrollView {
+                VStack(spacing: 24) {
+                    VStack(spacing: 16) {
+                        Text("Sign In")
+                            .font(.largeTitle.bold())
+                            .padding(.bottom, 20)
+                        
+                        VStack(spacing: 16) {
+                            CustomTextField(
+                                text: $email,
+                                placeholder: "Email",
+                                icon: "envelope"
+                            )
+                            
+                            CustomSecureField(
+                                text: $password,
+                                placeholder: "Password",
+                                showPassword: $showPassword
+                            )
+                            
+                            Button("Forgot Password?") {
+                                showReset = true
+                            }
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                         }
+                        
+                        Button(action: login) {
+                            Text("Sign In")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
                     }
-                    Button(action: {
-                        showPassword.toggle()
-                    }) {
-                        Image(systemName: showPassword ? "eye.slash" : "eye")
-                    }
-                }
-
-                Button("Forgot Password?") {
-                    showReset = true
-                }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .sheet(isPresented: $showReset) {
-                    ForgotPasswordView()
-                }
-
-                Button("Sign In") {
-                    auth.login(email: email, password: password) { _ in }
-                }
-                .buttonStyle(.borderedProminent)
-
-                Divider()
-
-// Commented due to in free developer version not allowign sign in with apple!!
-//              SignInWithAppleButton(
-//                    onRequest: { request in
-//                        request.requestedScopes = [.email, .fullName]
-//                    },
-//                    onCompletion: { result in
-//                        switch result {
-//                        case .success(let authResult):
-//                            if let credential = authResult.credential as? ASAuthorizationAppleIDCredential {
-//                                auth.signInWithApple(credential: credential)
-//                            }
-//                        default:
-//                            break
-//                        }
-//                    }
-//                )
-//                .frame(height: 45)
-
-                GoogleSignInButton(action: {
-                    auth.signInWithGoogle()
-                })
-                .frame(height: 45)
-
-                HStack {
-                    Text("Don't have an account?")
-                    Button("Register") {
-                        showRegister = true
+                    .padding(.horizontal)
+                    
+                    VStack(spacing: 16) {
+                        Text("Or continue with")
+                            .foregroundColor(.gray)
+                        
+                        VStack(spacing: 12) {
+                            SocialLoginButton(
+                                icon: "applelogo",
+                                text: "Continue with Apple",
+                                action: {}
+                            )
+                            
+                            SocialLoginButton(
+                                icon: "g.circle.fill",
+                                text: "Continue with Google",
+                                action: auth.signInWithGoogle
+                            )
+                            
+                            SocialLoginButton(
+                                icon: "f.circle.fill",
+                                text: "Continue with Facebook",
+                                action: {}
+                            )
+                        }
+                        
+                        HStack {
+                            Text("Don't have an account?")
+                            Button("Sign up") {
+                                showRegister = true
+                            }
+                            .foregroundColor(.blue)
+                        }
+                        .font(.subheadline)
                     }
                 }
-                .sheet(isPresented: $showRegister) {
-                    RegisterView()
-                }
+                .padding()
             }
-            .padding()
-            .navigationTitle("Login")
+            .sheet(isPresented: $showRegister) {
+                RegisterView()
+            }
+            .sheet(isPresented: $showReset) {
+                ForgotPasswordView()
+            }
         }
     }
     
+    private func login() {
+        auth.login(email: email, password: password) { _ in }
+    }
+}
+
+struct CustomTextField: View {
+    @Binding var text: String
+    let placeholder: String
+    let icon: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(.gray)
+            TextField(placeholder, text: $text)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.gray.opacity(0.2)))
+    }
+}
+
+struct CustomSecureField: View {
+    @Binding var text: String
+    let placeholder: String
+    @Binding var showPassword: Bool
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "lock")
+                .foregroundColor(.gray)
+            if showPassword {
+                TextField(placeholder, text: $text)
+            } else {
+                SecureField(placeholder, text: $text)
+            }
+            Button(action: { showPassword.toggle() }) {
+                Image(systemName: showPassword ? "eye.slash" : "eye")
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.gray.opacity(0.2)))
+    }
+}
+
+struct SocialLoginButton: View {
+    let icon: String
+    let text: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.title2)
+                Text(text)
+                    .fontWeight(.semibold)
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.gray.opacity(0.2)))
+        }
+        .foregroundColor(.primary)
+    }
+}
+
+struct PrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding()
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .scaleEffect(configuration.isPressed ? 0.95 : 1)
+    }
 }
 
 struct LoginView_Previews: PreviewProvider {
