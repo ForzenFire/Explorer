@@ -1,28 +1,22 @@
-//
-//  ExplorerApp.swift
-//  Explorer
-//
-//  Created by KAVINDU 040 on 2025-03-29.
-//
-
 import SwiftUI
 import FirebaseCore
 import EventKit
 import UserNotifications
 import Firebase
+import FirebaseAuth
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-  func application(_ application: UIApplication,
-                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-    FirebaseApp.configure()
-      print("Firebase Configured!")
-    
-      requestPermissions()
-      UNUserNotificationCenter.current().delegate = self
-    
-    return true
-  }
-    
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        FirebaseApp.configure()
+        print("Firebase Configured!")
+
+        requestPermissions()
+        UNUserNotificationCenter.current().delegate = self
+
+        return true
+    }
+
     private func requestPermissions() {
         let eventStore = EKEventStore()
 
@@ -52,7 +46,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             }
         }
     }
-    
+
     // ✅ Display banners while app is in foreground
     @objc(userNotificationCenter:willPresentNotification:withCompletionHandler:)
     func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -64,12 +58,37 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 
 @main
 struct ExplorerApp: App {
-    //Registering the app to Firebase
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
+    @State private var isLoggedIn: Bool = false
+    @State private var checkedAuth: Bool = false
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Group {
+                if checkedAuth {
+                    if isLoggedIn {
+                        MainTabView()
+                            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("logout"))) { _ in
+                                isLoggedIn = false
+                            }
+                    } else {
+                        LoginView()
+                            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("login"))) { _ in
+                                isLoggedIn = true
+                            }
+                    }
+                } else {
+                    // Optional: splash screen or progress indicator
+                    ProgressView("Loading...")
+                }
+            }
+            .onAppear {
+                // Delay Auth check until Firebase is configured
+                DispatchQueue.main.async {
+                    isLoggedIn = Auth.auth().currentUser != nil
+                    checkedAuth = true
+                }
+            }
         }
     }
 }
