@@ -9,12 +9,8 @@ struct DestinationCardView: View {
     let post: Post
     var style: CardStyle = .list // default style
 
-    var cardWidth: CGFloat {
-        style == .home ? 260 : 200
-    }
-
     var cardHeight: CGFloat {
-        style == .home ? 380 : 250
+        style == .home ? 360 : 250
     }
 
     var imageHeight: CGFloat {
@@ -24,7 +20,6 @@ struct DestinationCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             ZStack(alignment: .topTrailing) {
-                // Image Box
                 AsyncImage(url: URL(string: post.imageUrl)) { phase in
                     if let image = phase.image {
                         image
@@ -40,7 +35,8 @@ struct DestinationCardView: View {
                         Color.gray.opacity(0.3)
                     }
                 }
-                .frame(width: cardWidth, height: imageHeight)
+                .frame(height: imageHeight)
+                .frame(maxWidth: .infinity)
                 .clipped()
                 .cornerRadius(16)
 
@@ -54,7 +50,6 @@ struct DestinationCardView: View {
                 }
             }
 
-            // Info section
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(post.title)
@@ -82,9 +77,8 @@ struct DestinationCardView: View {
                         .lineLimit(1)
                 }
 
-                // Crowd Info Avatars
                 HStack(spacing: -10) {
-                    ForEach(0..<3, id: \.self) { index in
+                    ForEach(0..<3, id: \.self) { _ in
                         Image(systemName: "person.fill")
                             .resizable()
                             .scaledToFit()
@@ -102,11 +96,13 @@ struct DestinationCardView: View {
                 }
                 .padding(.top, 4)
             }
+            .padding(.horizontal)
         }
-        .padding()
-        .frame(width: cardWidth, height: cardHeight)
+        .padding(.vertical)
         .background(Color(.systemGray6))
         .cornerRadius(20)
         .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 4)
+        .frame(width: style == .home ? 300 : nil, height: cardHeight)
     }
+
 }
