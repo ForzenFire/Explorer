@@ -7,62 +7,88 @@ struct HomeView: View {
     
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading) {
-                HStack {
-                    if let urlString = profileController.userProfile?.profileImageUrl,
-                       let url = URL(string: urlString) {
-                        AsyncImage(url: url) { image in
-                            image.resizable()
-                        } placeholder: {
-                            Color.gray
-                        }
-                        .frame(width: 40, height: 40)
-                        .clipShape(Circle())
-                    } else {
-                        Image(systemName: "person.crop.circle")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                    }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
                     
-                    Text(profileController.userProfile?.fullName ?? "Hi there!")
-                        .font(.title2)
-                        .bold()
-                    
-                    Spacer()
-                }
-                .padding()
+                    // Profile Header
+                    HStack {
+                        HStack(spacing: 10) {
+                            if let urlString = profileController.userProfile?.profileImageUrl,
+                               let url = URL(string: urlString) {
+                            AsyncImage(url: url) { image in
+                                image.resizable()
+                            } placeholder: {
+                                Color.gray
+                            }
+                            .frame(width: 36, height: 36)
+                            .clipShape(Circle())
 
-                HStack {
-                    Text("Explore the")
-                        .font(.title2)
-                    +
-                    Text(" Beautiful Island!")
-                        .foregroundColor(.orange)
-                        .fontWeight(.bold)
-                }
-                .padding(.horizontal)
+                            } else {
+                              Image(systemName: "person.crop.circle")
+                                .resizable()
+                                .frame(width: 36, height: 36)
+                            }
 
-                HStack {
-                    Text("Popular Destination")
-                        .font(.headline)
-                    Spacer()
-                    NavigationLink(destination: AllDestinationsView()) {
-                        Text("View All")
-                    }
-                }
-                .padding(.horizontal)
+                                Text(profileController.userProfile?.fullName ?? "Hi there!")
+                                    .font(.subheadline)
+                                    .bold()
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(.systemGray6))
+                            .clipShape(Capsule())
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(postController.topPosts) { post in
-                            DestinationCardView(post: post, style: .home)
+                            Spacer()
+                            }
+                            .padding()
+//                    .padding(.horizontal, 14)
+//                    .padding(.vertical, 8)
+//                    .background(Color(.systemGray6))
+//                    .clipShape(Capsule())
+//                    .padding(.top, 10)
+//                    .padding(.horizontal)
 
+                    // Main Title
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Explore the")
+                            .font(.system(size: 28, weight: .semibold))
+
+                        HStack(spacing: 0) {
+                            Text("Beautiful ")
+                                .font(.system(size: 30, weight: .bold))
+                            Text("Island!")
+                                .font(.system(size: 30, weight: .bold))
+                                .foregroundColor(.orange)
                         }
                     }
                     .padding(.horizontal)
-                }
 
-                Spacer()
+                    // Section Title
+                    HStack {
+                        Text("Popular Destination")
+                            .font(.title3.weight(.semibold))
+                        Spacer()
+                        NavigationLink(destination: AllDestinationsView()) {
+                            Text("View All")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.top, 10)
+                    .padding(.horizontal)
+
+                    // Horizontal Card Scroll
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(postController.topPosts) { post in
+                                DestinationCardView(post: post, style: .home)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+
+                    Spacer()
+                }
             }
             .navigationBarHidden(true)
             .onAppear {
