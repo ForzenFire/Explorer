@@ -3,6 +3,7 @@ import Firebase
 import AuthenticationServices
 import GoogleSignIn
 import FirebaseFirestore
+import LocalAuthentication
 
 class AuthController: ObservableObject {
     @Published var isAuthenticated = false
@@ -23,12 +24,19 @@ class AuthController: ObservableObject {
                 return
             }
 
-            // Save user to Firestore
-            self.saveUserToFirestore(uid: uid, email: user.email, fullName: user.fullName, address: user.address, phone: user.phone, profileImage: user.profileImageUrl, completion: completion)
+            self.saveUserToFirestore(
+                uid: uid,
+                email: user.email,
+                fullName: user.fullName,
+                address: user.address,
+                phone: user.phone,
+                profileImage: user.profileImageUrl,
+                completion: completion
+            )
         }
     }
 
-    // MARK: - Login
+    // MARK: - Login (Email/Password)
     func login(email: String, password: String, completion: @escaping (Bool) -> Void) {
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             if let error = error {
@@ -37,9 +45,8 @@ class AuthController: ObservableObject {
                 return
             }
             self.isAuthenticated = true
-            // Notify app of login
             DispatchQueue.main.async {
-            NotificationCenter.default.post(name: Notification.Name("login"), object: nil)
+                NotificationCenter.default.post(name: Notification.Name("login"), object: nil)
             }
             completion(true)
         }
@@ -52,9 +59,7 @@ class AuthController: ObservableObject {
 
     // MARK: - Sign in with Google
     func signInWithGoogle() {
-        print("🟡 signInWithGoogle called")
         guard let clientID = FirebaseApp.app()?.options.clientID else { return }
-
         let config = GIDConfiguration(clientID: clientID)
 
         guard let rootViewController = UIApplication.shared.connectedScenes
@@ -66,23 +71,19 @@ class AuthController: ObservableObject {
         }
 
         GIDSignIn.sharedInstance.configuration = config
-
         GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
             if let error = error {
                 print("Google Sign-In Error: \(error.localizedDescription)")
                 return
             }
 
-            guard
-                let user = signInResult?.user,
-                let idToken = user.idToken?.tokenString
-            else {
+            guard let user = signInResult?.user,
+                  let idToken = user.idToken?.tokenString else {
                 print("❌ Missing Google ID/Access Token")
                 return
             }
 
             let accessToken = user.accessToken.tokenString
-
             let credential = GoogleAuthProvider.credential(
                 withIDToken: idToken,
                 accessToken: accessToken
@@ -93,12 +94,9 @@ class AuthController: ObservableObject {
                     print("Firebase Sign-In Error: \(error.localizedDescription)")
                     return
                 }
-                //success message
-                print("✅ Signed in with Google as: \(result?.user.email ?? "Unknown Email")")
 
                 guard let firebaseUser = result?.user else { return }
 
-                // Save basic Google info to Firestore
                 self.saveUserToFirestore(
                     uid: firebaseUser.uid,
                     email: firebaseUser.email ?? "",
@@ -109,11 +107,10 @@ class AuthController: ObservableObject {
                 ) { _ in }
 
                 self.isAuthenticated = true
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: Notification.Name("login"), object: nil)
+                }
             }
-        }
-        // Notify app of login
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: Notification.Name("login"), object: nil)
         }
     }
 
@@ -124,15 +121,15 @@ class AuthController: ObservableObject {
 
         let firebaseCredential = OAuthProvider.credential(
             providerID: .apple,
-                idToken: tokenString,
-                rawNonce: "",
-                accessToken: nil
-            )
+            idToken: tokenString,
+            rawNonce: "",
+            accessToken: nil
+        )
 
         Auth.auth().signIn(with: firebaseCredential)
     }
 
-    // MARK: - Save User to Firestore
+    // MARK: - Firestore Save
     private func saveUserToFirestore(uid: String, email: String, fullName: String?, address: String?, phone: String?, profileImage: String?, completion: @escaping (Bool) -> Void = { _ in }) {
         let db = Firestore.firestore()
         var data: [String: Any] = [
@@ -146,13 +143,58 @@ class AuthController: ObservableObject {
 
         db.collection("users").document(uid).setData(data, merge: true) { error in
             if let error = error {
-                print("❌ Error saving user to Firestore: \(error.localizedDescription)")
+                print("❌ Firestore Save Error: \(error.localizedDescription)")
                 self.errorMessage = error.localizedDescription
                 completion(false)
             } else {
-                print("✅ User data saved to Firestore.")
+                print("✅ User saved to Firestore.")
                 completion(true)
             }
         }
+    }
+
+    // MARK: - Save Credentials to Keychain
+    func saveCredentialsToKeychain(email: String, password: String) {
+        if let emailData = email.data(using: .utf8),
+           let passwordData = password.data(using: .utf8) {
+            KeychainManager.shared.save(emailData, service: "ExplorerApp", account: "email")
+            KeychainManager.shared.save(passwordData, service: "ExplorerApp", account: "password")
+        }
+    }
+
+    // MARK: - Retrieve Credentials
+    func retrieveCredentialsFromKeychain() -> (email: String, password: String)? {
+        guard let emailData = KeychainManager.shared.load(service: "ExplorerApp", account: "email"),
+              let passwordData = KeychainManager.shared.load(service: "ExplorerApp", account: "password"),
+              let email = String(data: emailData, encoding: .utf8),
+              let password = String(data: passwordData, encoding: .utf8) else {
+            return nil
+        }
+        return (email, password)
+    }
+
+    // MARK: - Biometric Face ID Login
+    func loginWithSavedCredentials(completion: @escaping (Bool) -> Void) {
+        guard let credentials = retrieveCredentialsFromKeychain() else {
+            completion(false)
+            return
+        }
+
+        BiometricAuth.authenticateWithBiometrics(reason: "Log in with Face ID") { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    self.login(email: credentials.email, password: credentials.password, completion: completion)
+                } else {
+                    self.errorMessage = "Face ID authentication failed."
+                    completion(false)
+                }
+            }
+        }
+    }
+
+    // MARK: - Face ID Opt-in (UserDefaults)
+    var isFaceIDEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: "faceIDEnabled") }
+        set { UserDefaults.standard.set(newValue, forKey: "faceIDEnabled") }
     }
 }

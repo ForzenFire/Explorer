@@ -474,6 +474,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Explorer/Info.plist;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Want to use Face ID to securely log you in.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location to show map directions.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "THis App uses Reminders to create System Tasks & Alerts";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -508,6 +509,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Explorer/Info.plist;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Want to use Face ID to securely log you in.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location to show map directions.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "THis App uses Reminders to create System Tasks & Alerts";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
