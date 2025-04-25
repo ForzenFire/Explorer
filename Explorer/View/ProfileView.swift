@@ -6,37 +6,97 @@ struct ProfileView: View {
     @State private var userName = Auth.auth().currentUser?.displayName ?? "User"
 
     var body: some View {
-        VStack(spacing: 20) {
-            VStack {
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .frame(width: 100, height: 100)
-                    .padding(.top, 20)
-                Text(userName).font(.title2).bold()
-                Text(userEmail).font(.subheadline).foregroundColor(.gray)
-            }
-
-            List {
-                Section {
-                    Label("Profile", systemImage: "person")
-                    Label("Bookmarked", systemImage: "bookmark")
-                    Label("Previous Trips", systemImage: "clock")
-                    Label("Settings", systemImage: "gear")
-                    Label("Version", systemImage: "info.circle")
+        NavigationView {
+            VStack(spacing: 0) {
+                // Profile header
+                VStack(spacing: 16) {
+                    Image(systemName: "person.crop.circle.fill")
+                        .resizable()
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(.gray)
                     
-                    Button(action: logout) {
-                        Label("Logout", systemImage: "arrow.uturn.left")
-                            .foregroundColor(.red)
+                    VStack(spacing: 4) {
+                        Text(userName)
+                            .font(.headline)
+                        Text(userEmail)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
                     }
                 }
-                .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
-                .listRowSeparator(.hidden)
+                .padding(.vertical, 32)
+                .frame(maxWidth: .infinity)
+                .background(Color(.systemBackground))
+                
+                // Menu items
+                VStack(spacing: 8) {
+                    ForEach(menuItems) { item in
+                        if item.isButton {
+                            NavigationLink {
+                                // Empty view for navigation
+                                Text(item.title)
+                            } label: {
+                                HStack {
+                                    Image(systemName: item.icon)
+                                        .foregroundColor(.blue)
+                                    Text(item.title)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.vertical, 16)
+                                .padding(.horizontal, 24)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        } else {
+                            Button(action: logout) {
+                                HStack {
+                                    Image(systemName: item.icon)
+                                        .foregroundColor(.red)
+                                    Text(item.title)
+                                        .foregroundColor(.red)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.vertical, 16)
+                                .padding(.horizontal, 24)
+                            }
+                        }
+                        
+                        if item.id != menuItems.last?.id {
+                            Divider()
+                                .padding(.leading, 60)
+                        }
+                    }
+                }
+                .background(Color(.systemBackground))
+                .padding(.top, 8)
+                .padding(.horizontal, 16)
+                
+                Spacer()
             }
-            .frame(minHeight: 400)
-            .listStyle(.plain)
-            .background(Color(.systemGroupedBackground))
+            .navigationTitle("Profile")
+            .navigationBarHidden(true)
         }
-        .navigationTitle("Profile")
+    }
+    
+    private var menuItems: [MenuItem] {
+        [
+            MenuItem(id: 0, title: "Profile", icon: "person", isButton: true),
+            MenuItem(id: 1, title: "Bookmarked", icon: "bookmark", isButton: true),
+            MenuItem(id: 2, title: "Previous Trips", icon: "clock", isButton: true),
+            MenuItem(id: 3, title: "Settings", icon: "gear", isButton: true),
+            MenuItem(id: 4, title: "Version", icon: "info.circle", isButton: true),
+            MenuItem(id: 5, title: "Logout", icon: "arrow.uturn.left", isButton: false)
+        ]
+    }
+    
+    private struct MenuItem: Identifiable {
+        let id: Int
+        let title: String
+        let icon: String
+        let isButton: Bool
     }
 
     func logout() {
@@ -50,7 +110,6 @@ struct ProfileView: View {
         }
     }
 }
-
 
 struct ProfileView_Preview: PreviewProvider {
     static var previews: some View {

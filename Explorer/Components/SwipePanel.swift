@@ -1,9 +1,9 @@
 import SwiftUI
 
 enum PanelPosition: CGFloat, CaseIterable {
-    case top = 0.1       // Minimal height (just showing handle)
-    case middle = 0.5    // Half screen height
-    case bottom = 0.85   // Nearly full screen (for keyboard input)
+    case top = 0.1
+    case middle = 0.5
+    case bottom = 0.85
 }
 
 struct SwipePanel<Content: View>: View {
@@ -13,31 +13,31 @@ struct SwipePanel<Content: View>: View {
     @GestureState private var dragOffset: CGFloat = 0
     @State private var keyboardHeight: CGFloat = 0
     @State private var keyboardObservers: [NSObjectProtocol] = []
-    
+
     init(position: Binding<PanelPosition>, isKeyboardActive: Bool = false, @ViewBuilder content: () -> Content) {
         self._position = position
         self.isKeyboardActive = isKeyboardActive
         self.content = content()
     }
-    
+
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 0) {
-                // Handle with tap gesture
+                // Handle
                 Capsule()
                     .fill(Color.gray.opacity(0.5))
                     .frame(width: 40, height: 6)
                     .padding(.top, 8)
                     .gesture(
                         TapGesture()
-                            .onEnded { _ in
+                            .onEnded {
                                 withAnimation(.interactiveSpring()) {
                                     position = position == .top ? .middle : .top
                                 }
                             }
                     )
-                
-                // Content with keyboard-adjusted padding
+
+                // Panel content
                 content
                     .padding(.bottom, keyboardHeight > 0 ? keyboardHeight - geo.safeAreaInsets.bottom : 0)
             }
@@ -49,7 +49,7 @@ struct SwipePanel<Content: View>: View {
             )
             .offset(y: currentOffset(for: geo.size.height))
             .animation(.interactiveSpring(), value: position)
-            .animation(.interactiveSpring(), value: dragOffset)
+            .offset(y: dragOffset)
             .gesture(
                 DragGesture()
                     .updating($dragOffset) { value, state, _ in
@@ -59,29 +59,31 @@ struct SwipePanel<Content: View>: View {
                     }
                     .onEnded { value in
                         guard !isKeyboardActive else { return }
-                        
-                        let relativeChange = value.translation.height / geo.size.height
-                        let newRawValue = (position.rawValue + relativeChange).clamped(to: 0...1)
-                        let closestPosition = PanelPosition.allCases.min {
+
+                        let height = geo.size.height
+                        let dragFraction = value.translation.height / height
+                        let predictedFraction = value.predictedEndTranslation.height / height
+                        let totalFraction = dragFraction + predictedFraction
+
+                        let newRawValue = (position.rawValue + totalFraction).clamped(to: 0...1)
+                        let closest = PanelPosition.allCases.min(by: {
                             abs($0.rawValue - newRawValue) < abs($1.rawValue - newRawValue)
-                        } ?? .middle
-                        position = closestPosition
+                        }) ?? .middle
+
+                        withAnimation(.interactiveSpring()) {
+                            position = closest
+                        }
                     }
             )
         }
-        .onAppear {
-            setupKeyboardObservers()
-        }
-        .onDisappear {
-            removeKeyboardObservers()
-        }
+        .onAppear(perform: setupKeyboardObservers)
+        .onDisappear(perform: removeKeyboardObservers)
     }
-    
+
     private func currentOffset(for height: CGFloat) -> CGFloat {
-        let baseOffset = height * (1 - position.rawValue)
-        return baseOffset + (isKeyboardActive ? 0 : dragOffset)
+        height * (1 - position.rawValue)
     }
-    
+
     private func setupKeyboardObservers() {
         let showObserver = NotificationCenter.default.addObserver(
             forName: UIResponder.keyboardWillShowNotification,
@@ -92,7 +94,7 @@ struct SwipePanel<Content: View>: View {
                 keyboardHeight = keyboardFrame.height
             }
         }
-        
+
         let hideObserver = NotificationCenter.default.addObserver(
             forName: UIResponder.keyboardWillHideNotification,
             object: nil,
@@ -100,14 +102,12 @@ struct SwipePanel<Content: View>: View {
         ) { _ in
             keyboardHeight = 0
         }
-        
+
         keyboardObservers = [showObserver, hideObserver]
     }
-    
+
     private func removeKeyboardObservers() {
-        keyboardObservers.forEach { observer in
-            NotificationCenter.default.removeObserver(observer)
-        }
+        keyboardObservers.forEach { NotificationCenter.default.removeObserver($0) }
     }
 }
 

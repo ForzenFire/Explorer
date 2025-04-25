@@ -24,7 +24,7 @@ struct MapView: View {
                 .padding(.bottom)
             }
         }
-        .onChange(of: isSearchFieldFocused) { focused in
+        .onChange(of: isSearchFieldFocused) {_, focused in
             withAnimation(.interactiveSpring()) {
                 if focused {
                     lastNonKeyboardPosition = panelPosition
