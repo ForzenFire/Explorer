@@ -11,6 +11,7 @@ extension MKCoordinateRegion {
 }
 
 class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
+
     @Published var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718),
         span: MKCoordinateSpan(latitudeDelta: 1.5, longitudeDelta: 1.5)
@@ -20,6 +21,7 @@ class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var selectedPlace: MapSearchResult?
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var route: MKRoute?
+    @Published var isNavigatingToSearchResult = false
     
     private let locationManager = CLLocationManager()
     private var cancellables = Set<AnyCancellable>()
@@ -36,10 +38,12 @@ class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         DispatchQueue.main.async {
             self.userLocation = location.coordinate
-            self.region = MKCoordinateRegion(
-                center: location.coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            )
+            if !self.isNavigatingToSearchResult {
+                self.region = MKCoordinateRegion(
+                    center: location.coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                )
+            }
         }
     }
     
@@ -69,6 +73,7 @@ class MapViewController: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func showDirections(to place: MapSearchResult) {
+        isNavigatingToSearchResult = true
         selectedPlace = place
         region = MKCoordinateRegion(
             center: place.coordinate,

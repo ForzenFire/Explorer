@@ -32,7 +32,7 @@ struct AllDestinationsView: View {
 
             // Grid
             ScrollView {
-                LazyVGrid(columns: columns, alignment: .center, spacing: 20) {
+                LazyVGrid(columns: columns, alignment: .center, spacing: 46) {
                     ForEach(postController.allPosts) { post in
                         DestinationCardView(post: post, style: .list)
                     }

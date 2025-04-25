@@ -5,6 +5,7 @@ struct HomeView: View {
     @StateObject var profileController = ProfileController()
     @StateObject var postController = PostController()
     @State private var selectedIndex: Int = 0
+    @GestureState private var dragOffset: CGFloat = 0
 
     var body: some View {
         NavigationView {
@@ -72,38 +73,48 @@ struct HomeView: View {
                     .padding(.horizontal)
 
                     // Swipeable Stacked Cards
-                    GeometryReader { outerGeometry in
-                        let cardWidth = outerGeometry.size.width * 0.8
-                        let spacing: CGFloat = 16
+                    if !postController.topPosts.isEmpty {
+                        ZStack {
+                            ForEach(postController.topPosts.indices, id: \.self) { index in
+                                let post = postController.topPosts[index]
 
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: spacing) {
-                                ForEach(Array(postController.topPosts.enumerated()), id: \.1.id) { index, post in
-                                    DestinationCardView(post: post, style: .home)
-                                        .frame(width: cardWidth)
-                                        .scaleEffect(index == selectedIndex ? 1.0 : 0.94)
-                                        .offset(x: CGFloat(index - selectedIndex) * (cardWidth * 0.1))
-                                        .zIndex(Double(postController.topPosts.count - index))
-                                        .animation(.easeInOut(duration: 0.3), value: selectedIndex)
-                                }
+                                let isTopCard = index == selectedIndex
+                                let isNextCard = index == selectedIndex + 1
+                                let topCardOffset: CGFloat = dragOffset
+                                let nextCardOffset: CGFloat = max(dragOffset, 0) / 2
+
+                                DestinationCardView(post: post, style: .home)
+                                    .frame(width: UIScreen.main.bounds.width * 0.82)
+                                    .offset(x: isTopCard ? topCardOffset : (isNextCard ? nextCardOffset : 0))
+                                    .scaleEffect(isTopCard ? 1.0 : 0.95)
+                                    .opacity(index < selectedIndex ? 0 : 1)
+                                    .zIndex(selectedIndex == index ? 2 : 1)
+                                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: dragOffset)
+                                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedIndex)
                             }
-                            .padding(.horizontal, (outerGeometry.size.width - cardWidth) / 2)
                         }
-                        .content.offset(x: -CGFloat(selectedIndex) * (cardWidth + spacing))
+                        .frame(height: 400)
                         .gesture(
                             DragGesture()
+                                .updating($dragOffset, body: { value, state, _ in
+                                    state = value.translation.width
+                                })
                                 .onEnded { value in
-                                    let threshold: CGFloat = 50
-                                    if value.translation.width < -threshold && selectedIndex < postController.topPosts.count - 1 {
+                                    let threshold: CGFloat = 80
+                                    if value.translation.width > threshold && selectedIndex < postController.topPosts.count - 1 {
                                         selectedIndex += 1
-                                    } else if value.translation.width > threshold && selectedIndex > 0 {
+                                    } else if value.translation.width < -threshold && selectedIndex > 0 {
                                         selectedIndex -= 1
                                     }
                                 }
                         )
+                        .padding(.top)
+                    } else {
+                        ProgressView("Loading destinations...")
+                            .frame(height: 400)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top)
                     }
-                    .frame(height: 400)
-
                     Spacer()
                 }
             }
@@ -116,6 +127,7 @@ struct HomeView: View {
             }
         }
     }
+
 }
 
 
