@@ -23,31 +23,31 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         if #available(iOS 17.0, *) {
             eventStore.requestFullAccessToReminders { granted, error in
                 if granted {
-                    print("✅ Full Reminder access granted (iOS 17+)")
+                    print("Full Reminder access granted (iOS 17+)")
                 } else {
-                    print("❌ Access denied: \(String(describing: error))")
+                    print("Access denied: \(String(describing: error))")
                 }
             }
         } else {
             eventStore.requestAccess(to: .reminder) { granted, error in
                 if granted {
-                    print("✅ Reminder access granted (iOS <17)")
+                    print("Reminder access granted (iOS <17)")
                 } else {
-                    print("❌ Access denied: \(String(describing: error))")
+                    print("Access denied: \(String(describing: error))")
                 }
             }
         }
 
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
-                print("✅ Notification access granted.")
+                print("Notification access granted.")
             } else {
-                print("❌ Notification permission denied: \(String(describing: error))")
+                print("Notification permission denied: \(String(describing: error))")
             }
         }
     }
 
-    // ✅ Display banners while app is in foreground
+    // Display banners while app is in foreground
     @objc(userNotificationCenter:willPresentNotification:withCompletionHandler:)
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
