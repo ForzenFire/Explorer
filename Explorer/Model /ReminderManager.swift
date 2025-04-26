@@ -55,7 +55,7 @@ final class ReminderManager: ObservableObject {
         if #available(iOS 17.0, *) {
             eventStore.requestFullAccessToReminders { granted, error in
                 guard granted else {
-                    print("❌ Full reminder access denied (iOS 17+): \(String(describing: error))")
+                    print("Full reminder access denied (iOS 17+): \(String(describing: error))")
                     return
                 }
                 self.saveEKReminder(for: reminder)
@@ -63,7 +63,7 @@ final class ReminderManager: ObservableObject {
         } else {
             eventStore.requestAccess(to: .reminder) { granted, error in
                 guard granted else {
-                    print("❌ Reminder access denied (iOS <17): \(String(describing: error))")
+                    print("Reminder access denied (iOS <17): \(String(describing: error))")
                     return
                 }
                 self.saveEKReminder(for: reminder)
@@ -84,13 +84,13 @@ final class ReminderManager: ObservableObject {
             )
         }
 
-        // ✅ Assign to default calendar, fallback if nil
+        // Assign to default calendar, fallback if nil
         if let calendar = self.eventStore.defaultCalendarForNewReminders() {
             ekReminder.calendar = calendar
         } else if let fallback = self.eventStore.calendars(for: .reminder).first(where: { $0.allowsContentModifications }) {
             ekReminder.calendar = fallback
         } else {
-            print("❌ No writable calendar found for reminders.")
+            print("No writable calendar found for reminders.")
             DispatchQueue.main.async {
                 onFailure?()
             }
@@ -99,9 +99,9 @@ final class ReminderManager: ObservableObject {
 
         do {
             try self.eventStore.save(ekReminder, commit: true)
-            print("✅ Reminder saved to system Reminders app")
+            print("Reminder saved to system Reminders app")
         } catch {
-            print("❌ Failed to save to EventKit: \(error.localizedDescription)")
+            print("Failed to save to EventKit: \(error.localizedDescription)")
         }
     }
 
@@ -119,13 +119,13 @@ final class ReminderManager: ObservableObject {
 
         let request = UNNotificationRequest(identifier: uuid, content: content, trigger: trigger)
 
-        print("📅 Scheduling notification at:", date)
+        print("Scheduling notification at:", date)
 
         notificationCenter.add(request) { error in
             if let error = error {
-                print("❌ Notification failed:", error.localizedDescription)
+                print("Notification failed:", error.localizedDescription)
             } else {
-                print("✅ Notification scheduled for:", uuid)
+                print("Notification scheduled for:", uuid)
             }
         }
     }
@@ -141,19 +141,19 @@ final class ReminderManager: ObservableObject {
 
         switch status {
         case .notDetermined:
-            print("🔍 Not determined")
+            print("Not determined")
         case .restricted:
-            print("🚫 Restricted")
+            print("Restricted")
         case .denied:
-            print("❌ Denied")
+            print("Denied")
         case .authorized:
-            print("✅ Authorized")
+            print("Authorized")
         case .fullAccess:
-            print("✅ Full access granted")
+            print("Full access granted")
         case .writeOnly:
-            print("✍️ Write-only access")
+            print("Write-only access")
         @unknown default:
-            print("❓ Unknown status")
+            print("Unknown status")
         }
 
     }
