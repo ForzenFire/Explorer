@@ -143,19 +143,19 @@ struct LoginView: View {
                 BiometricAuth.authenticateWithBiometrics(reason: "Enable Face ID for faster login?") { faceIDSuccess, error in
                     if faceIDSuccess {
                         auth.isFaceIDEnabled = true
-                        print("✅ Face ID enabled")
+                        print("Face ID enabled")
                     } else {
-                        print("❌ Face ID setup canceled or failed")
+                        print("Face ID setup canceled or failed")
                     }
 
-                    // ⚠️ Trigger login success navigation AFTER biometric
+                    //Trigger login success navigation AFTER biometric
                     DispatchQueue.main.async {
                         NotificationCenter.default.post(name: Notification.Name("login"), object: nil)
                     }
                 }
             } else {
                 // Optional: show an alert if login fails
-                print("❌ Login failed")
+                print("Login failed")
             }
         }
     }
