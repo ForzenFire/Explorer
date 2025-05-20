@@ -1,24 +1,41 @@
+import EventKit
 import SwiftUI
 
 struct ReminderView: View {
     @State private var reminders: [CDReminder] = []
+    @State private var showEditSheet = false
+    @State private var selectedReminder: CDReminder?
 
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
                 List {
                     Section(header: reminderHeader(title: "Today", systemImage: "calendar")) {
-                        ForEach(reminders.filter(isToday), id: \.uuid) { reminder in
+                        ForEach(reminders.filter(isToday), id: \ .uuid) { reminder in
                             ReminderRow(reminder: reminder) {
                                 delete(reminder: reminder)
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button("Edit") {
+                                    selectedReminder = reminder
+                                    showEditSheet = true
+                                }
+                                .tint(.orange)
                             }
                         }
                     }
 
                     Section(header: reminderHeader(title: "Scheduled", systemImage: "calendar.badge.clock")) {
-                        ForEach(reminders.filter(isUpcoming), id: \.uuid) { reminder in
+                        ForEach(reminders.filter(isUpcoming), id: \ .uuid) { reminder in
                             ReminderRow(reminder: reminder) {
                                 delete(reminder: reminder)
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button("Edit") {
+                                    selectedReminder = reminder
+                                    showEditSheet = true
+                                }
+                                .tint(.orange)
                             }
                         }
                     }
@@ -27,9 +44,14 @@ struct ReminderView: View {
                 .onAppear {
                     loadReminders()
                 }
+                .sheet(item: $selectedReminder) { reminder in
+                    EditReminderView(reminder: reminder) {
+                        loadReminders()
+                    }
+                }
 
                 Button(action: {
-                    // 👉 TODO: Present AddReminderView
+                    // TODO: Present AddReminderView
                 }) {
                     Text("New Reminder")
                         .foregroundColor(.blue)
@@ -40,8 +62,6 @@ struct ReminderView: View {
         }
     }
 
-    // MARK: - Data Methods
-
     private func loadReminders() {
         reminders = ReminderManager.shared.getReminders()
     }
@@ -50,8 +70,6 @@ struct ReminderView: View {
         ReminderManager.shared.deleteReminder(reminder)
         reminders.removeAll { $0.uuid == reminder.uuid }
     }
-
-    // MARK: - Helpers
 
     private func isToday(_ reminder: CDReminder) -> Bool {
         guard let date = reminder.dueDate else { return false }
@@ -70,11 +88,5 @@ struct ReminderView: View {
             Text(title)
                 .font(.headline)
         }
-    }
-}
-
-struct ReminderView_Previews: PreviewProvider {
-    static var previews: some View {
-        ReminderView()
     }
 }

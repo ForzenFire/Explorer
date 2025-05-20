@@ -22,7 +22,7 @@ extension CDReminder {
     @NSManaged public var notes: String?
     @NSManaged public var title: String?
     @NSManaged public var uuid: String?
-
+    @NSManaged public var calendarIdentifier: String?
 }
 
 extension CDReminder : Identifiable {
