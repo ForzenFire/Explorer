@@ -96,7 +96,7 @@ struct ReminderView: View {
     }
 
     private func toggleCompletion(for reminder: CDReminder, to status: Bool) {
-        ReminderManager.shared.updateCompletionStatus(for: reminder, to: status)
+        ReminderManager.shared.toggleCompletion(for: reminder, isCompleted: status)
         loadReminders()
     }
 
