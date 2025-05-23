@@ -10,8 +10,6 @@ struct EditReminderView: View {
     @State private var notes: String = ""
     @State private var selectedDate: Date?
 
-    private let eventStore = EKEventStore()
-
     var body: some View {
         NavigationView {
             Form {
@@ -58,35 +56,12 @@ struct EditReminderView: View {
     }
 
     private func saveChanges() {
-        // 1. Update local Core Data reminder
         reminder.title = title
         reminder.notes = notes.isEmpty ? nil : notes
         reminder.dueDate = selectedDate
 
-        // 2. Try to update system EKReminder
-        if let ekReminderID = reminder.calendarIdentifier {
-            if let ekReminder = eventStore.calendarItem(withIdentifier: ekReminderID) as? EKReminder {
-                ekReminder.title = title
-                ekReminder.notes = notes
-                if let selectedDate {
-                    ekReminder.dueDateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: selectedDate)
-                }
-
-                do {
-                    try eventStore.save(ekReminder, commit: true)
-                } catch {
-                    print("❌ Failed to update EKReminder: \(error.localizedDescription)")
-                }
-            } else {
-                print("⚠️ Could not find EKReminder with identifier: \(ekReminderID)")
-            }
-        } else {
-            print("⚠️ No calendarIdentifier found on CDReminder")
-        }
-
-
-        // 3. Save local context
         ReminderManager.shared.saveChanges(for: reminder)
+
         onSave()
         dismiss()
     }

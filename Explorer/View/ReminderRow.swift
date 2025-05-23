@@ -1,22 +1,28 @@
 import SwiftUI
 
 struct ReminderRow: View {
-    let reminder: CDReminder
+    @ObservedObject var reminder: CDReminder
     let onDelete: () -> Void
-    @State private var isCompleted = false
+    let onToggleCompletion: (Bool) -> Void
 
     var body: some View {
         HStack(alignment: .top) {
             Button(action: {
-                isCompleted.toggle()
+                let newStatus = !reminder.isCompleted
+                onToggleCompletion(newStatus)
             }) {
-                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(isCompleted ? .blue : .gray)
+                Image(systemName: reminder.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(reminder.isCompleted ? .blue : .gray)
+                    .imageScale(.large)
             }
+            .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(reminder.title ?? "")
                     .font(.body)
+                    .strikethrough(reminder.isCompleted, color: .gray)
+                    .foregroundColor(reminder.isCompleted ? .gray : .primary)
+
                 if let list = reminder.list {
                     HStack(spacing: 6) {
                         Circle().fill(.red).frame(width: 10, height: 10)
@@ -25,8 +31,6 @@ struct ReminderRow: View {
                             .foregroundColor(.gray)
                     }
                     .padding(.top, 2)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
                 }
             }
 
