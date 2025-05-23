@@ -6,6 +6,7 @@ struct HomeView: View {
     @StateObject var postController = PostController()
     @State private var selectedIndex: Int = 0
     @GestureState private var dragOffset: CGFloat = 0
+    @StateObject private var weatherController = WeatherController()
 
     var body: some View {
         NavigationView {
@@ -57,6 +58,8 @@ struct HomeView: View {
                         }
                     }
                     .padding(.horizontal)
+                    
+                    WeatherView(weatherController: weatherController)
 
                     // Section Title
                     HStack {
@@ -69,7 +72,7 @@ struct HomeView: View {
                                 .foregroundColor(.blue)
                         }
                     }
-                    .padding(.top, 10)
+                    .padding(.top, 7)
                     .padding(.horizontal)
 
                     // Swipeable Stacked Cards

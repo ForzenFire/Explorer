@@ -76,7 +76,7 @@ struct AddPostView: View {
         }
     }
     
-    // ✅ Load UIImage from PhotosPickerItem
+    // Load UIImage from PhotosPickerItem
     private func loadImage() {
         guard let item = selectedImageItem else { return }
         item.loadTransferable(type: Data.self) { result in
@@ -97,7 +97,7 @@ struct AddPostView: View {
         }
     }
 
-    // ✅ Upload post after checking all fields
+    // Upload post after checking all fields
     private func uploadPost() {
         guard let image = selectedImage,
               let imageData = image.jpegData(compressionQuality: 0.8),
